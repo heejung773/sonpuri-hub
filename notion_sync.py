@@ -150,13 +150,14 @@ def sync_notion_data():
     with open(CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(data_by_number, f, ensure_ascii=False, indent=2)
     
-    # Also save to static folder for Vercel/CDN static deployment
-    static_cache = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "data_cache.json")
-    try:
-        with open(static_cache, "w", encoding="utf-8") as f:
-            json.dump(data_by_number, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
+    # Also save to static and public folder for Vercel/CDN static deployment
+    for sub in ["static", "public"]:
+        sub_cache = os.path.join(os.path.dirname(os.path.abspath(__file__)), sub, "data_cache.json")
+        try:
+            with open(sub_cache, "w", encoding="utf-8") as f:
+                json.dump(data_by_number, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
 
     print(f"[OK] 캐시 저장 완료: {CACHE_FILE}")
     return data_by_number

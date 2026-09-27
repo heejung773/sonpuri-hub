@@ -1,0 +1,665 @@
+:root {
+  --bg-page: #F8FAFC;
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
+  --card-hover-border: #CBD5E1;
+  
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  
+  /* Solution button: clean, crisp red without eye-straining glow */
+  --btn-sol: #DC2626;
+  --btn-sol-hover: #B91C1C;
+  
+  --diff-high-bg: #FEE2E2;
+  --diff-high-text: #991B1B;
+  --diff-mid-bg: #FEF3C7;
+  --diff-mid-text: #92400E;
+  --diff-low-bg: #DCFCE7;
+  --diff-low-text: #166534;
+  
+  --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 50px;
+}
+
+.app-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+/* ==================== NAVBAR ==================== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-badge {
+  background: #0F172A;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: -0.2px;
+}
+
+.brand-text h1 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.brand-text .subtext {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.btn-sync {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #F1F5F9;
+  color: var(--text-secondary);
+  border: 1px solid var(--card-border);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-sync:hover {
+  background: #E2E8F0;
+  color: var(--text-primary);
+}
+
+.btn-sync.spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* ==================== SEARCH BAR ==================== */
+.search-section {
+  margin-bottom: 18px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search-input-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.search-icon {
+  font-size: 16px;
+  color: #94A3B8;
+  margin-right: 8px;
+}
+
+.search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  padding: 10px 0;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: #94A3B8;
+  font-size: 14px;
+}
+
+.btn-clear {
+  background: #E2E8F0;
+  border: none;
+  color: #64748B;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-clear:hover {
+  background: #CBD5E1;
+  color: #0F172A;
+}
+
+.btn-search {
+  background: var(--primary);
+  color: #FFFFFF;
+  border: none;
+  padding: 0 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-search:hover {
+  background: var(--primary-hover);
+}
+
+/* Quick Chips */
+.quick-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.chips-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-right: 2px;
+}
+
+.chip {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chip:hover, .chip.active-preset {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.chip-sol {
+  color: #B91C1C;
+}
+
+.chip-sol:hover {
+  background: #FEF2F2;
+  border-color: #FECACA;
+}
+
+.chip-all {
+  margin-left: auto;
+}
+
+/* ==================== SHEET TOOLBAR ==================== */
+.sheet-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.result-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  background: #EFF6FF;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.diff-btn-group {
+  display: flex;
+  border: 1px solid #CBD5E1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.diff-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-right: 1px solid #E2E8F0;
+}
+
+.diff-btn:last-child {
+  border-right: none;
+}
+
+.diff-btn:hover {
+  background: #F1F5F9;
+  color: var(--text-primary);
+}
+
+.diff-btn.active {
+  background: #0F172A;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.toggle-label input {
+  accent-color: var(--btn-sol);
+  cursor: pointer;
+}
+
+.btn-print {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: var(--text-secondary);
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-print:hover {
+  background: #F1F5F9;
+  color: var(--text-primary);
+}
+
+/* ==================== LOADING & EMPTY STATES ==================== */
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  margin-top: 10px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E2E8F0;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+.empty-msg {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.empty-chips {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* ==================== COMPACT PROBLEM CARDS ==================== */
+.problems-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.problem-card {
+  background: #FFFFFF;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s;
+}
+
+.problem-card:hover {
+  border-color: #94A3B8;
+}
+
+/* Main Meta & Action Row: 번호, 단원, 난이도, 문제유형, 손풀이영상버튼 */
+.card-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.problem-no-badge {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.badge-unit {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1D4ED8;
+  background: #EFF6FF;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+.badge-diff {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+.badge-diff.diff-high {
+  background: var(--diff-high-bg);
+  color: var(--diff-high-text);
+}
+
+.badge-diff.diff-mid {
+  background: var(--diff-mid-bg);
+  color: var(--diff-mid-text);
+}
+
+.badge-diff.diff-low {
+  background: var(--diff-low-bg);
+  color: var(--diff-low-text);
+}
+
+.badge-diff.diff-none {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.meta-divider {
+  color: #CBD5E1;
+  font-size: 13px;
+}
+
+.meta-type {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.type-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Action: 손풀이영상 버튼 영역 */
+.card-action-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* Simple, clean, eye-friendly solution button */
+.btn-sol-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--btn-sol);
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.btn-sol-cta:hover {
+  background: var(--btn-sol-hover);
+}
+
+.btn-icon-copy, .btn-embed-toggle {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-icon-copy:hover, .btn-embed-toggle:hover {
+  background: #E2E8F0;
+  color: var(--text-primary);
+}
+
+.sol-missing-badge {
+  font-size: 12px;
+  color: #94A3B8;
+  background: #F1F5F9;
+  padding: 4px 10px;
+  border-radius: 5px;
+}
+
+/* Row 2: 출제의도 (난이도, 문제유형과 함께 깔끔하게 표시) */
+.card-intent-row {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #F1F5F9;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
+}
+
+.intent-label {
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.intent-body {
+  color: #475569;
+}
+
+/* Embedded Player (콤팩트 토글 영역) */
+.card-embed-box {
+  margin-top: 12px;
+  background: #0F172A;
+  border-radius: 6px;
+  overflow: hidden;
+  max-width: 680px;
+}
+
+.player-aspect-ratio {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+}
+
+.player-aspect-ratio iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .app-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .problem-card {
+    border: 1px solid #D1D5DB !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+  }
+  .btn-sol-cta, .btn-icon-copy, .btn-embed-toggle {
+    display: none !important;
+  }
+  .card-embed-box {
+    display: none !important;
+  }
+  .problem-no-badge {
+    background: #EEEEEE !important;
+    color: #000000 !important;
+  }
+}
