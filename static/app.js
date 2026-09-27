@@ -429,6 +429,38 @@ async function triggerNotionSync() {
   syncBtn.disabled = true;
   syncBtnText.textContent = "동기화 중...";
 
+  const isVercel = window.location.hostname.includes("vercel.app") || window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+
+  if (isVercel) {
+    // Online Vercel mode: reload freshest data from CDN with cache-busting
+    try {
+      const cacheBustUrl = `/data_cache.json?_t=${Date.now()}`;
+      let cRes = await fetch(cacheBustUrl);
+      if (!cRes.ok) cRes = await fetch(`/static/data_cache.json?_t=${Date.now()}`);
+      if (cRes.ok) {
+        staticDataCache = await cRes.json();
+        const vals = Object.values(staticDataCache);
+        const total = vals.length;
+        const solved = vals.filter(p => p.has_solution).length;
+        const units = Array.from(new Set(vals.map(p => p.unit).filter(Boolean))).sort();
+        statsText.textContent = `시너지 DB 총 ${total}문항 (영상 ${solved}건)`;
+        populateUnits(units);
+        performSearch(searchInput.value.trim());
+        showToast("최신 배포 데이터가 갱신되었습니다!");
+      } else {
+        showToast("최신 데이터를 불러오지 못했습니다.");
+      }
+    } catch (e) {
+      showToast("데이터 갱신 중 오류가 발생했습니다.");
+    } finally {
+      syncBtn.classList.remove("spinning");
+      syncBtn.disabled = false;
+      syncBtnText.textContent = "노션 동기화";
+    }
+    return;
+  }
+
+  // Local Flask Server mode: call /api/sync directly
   try {
     const res = await fetch("/api/sync", { method: "POST" });
     const data = await res.json();
@@ -440,7 +472,7 @@ async function triggerNotionSync() {
       showToast("동기화 실패: " + data.error);
     }
   } catch (err) {
-    showToast("동기화 중 네트워크 오류 발생");
+    showToast("동기화 중 오류가 발생했습니다.");
   } finally {
     syncBtn.classList.remove("spinning");
     syncBtn.disabled = false;
