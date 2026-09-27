@@ -21,7 +21,7 @@
         <span class="logo-badge">시너지</span>
         <div class="brand-text">
           <h1>미적분1 오답노트 & 손풀이 검색</h1>
-          <span class="subtext">노션 DB 연동 (0001~0920번)</span>
+          <span class="subtext" id="dbRangeSubtext">노션 DB 연동 (0001~0940번)</span>
         </div>
       </div>
       <div class="nav-actions">
@@ -46,7 +46,7 @@
             type="text" 
             id="searchInput" 
             class="search-input" 
-            placeholder="번호 또는 범위 입력 (예: 120-124, 1, 3, 5~10, 904-920)"
+            placeholder="번호 또는 범위 입력 (예: 120-124, 1, 3, 5~10, 936, 904-940)"
             value="120-124"
             autocomplete="off"
             autofocus
@@ -62,9 +62,9 @@
         <button class="chip active-preset" data-query="120-124">120~124번</button>
         <button class="chip" data-query="22-38">22~38번</button>
         <button class="chip" data-query="1-15">1~15번</button>
-        <button class="chip" data-query="904-920">904~920번</button>
+        <button class="chip" data-query="904-940">904~940번</button>
         <button class="chip chip-sol" data-query="sol">손풀이 있는 문제만</button>
-        <button class="chip chip-all" data-query="all">전체 (140문항)</button>
+        <button class="chip chip-all" data-query="all" id="chipAllBtn">전체 문항</button>
       </div>
     </section>
 

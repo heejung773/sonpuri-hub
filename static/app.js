@@ -114,29 +114,45 @@ function resetFilterUI() {
 
 let staticDataCache = null;
 
+function updateSummaryUI(total, solved, minNo, maxNo) {
+  if (statsText) {
+    statsText.textContent = `시너지 DB 총 ${total}문항 (영상 ${solved}건)`;
+  }
+  const dbSubtext = document.getElementById("dbRangeSubtext");
+  if (dbSubtext && minNo && maxNo) {
+    dbSubtext.textContent = `노션 DB 연동 (${minNo}~${maxNo}번)`;
+  }
+  const chipAll = document.getElementById("chipAllBtn");
+  if (chipAll) {
+    chipAll.textContent = `전체 (${total}문항)`;
+  }
+}
+
 // Fetch Summary Stats
 async function fetchSummary() {
   try {
     const res = await fetch("/api/summary");
     if (!res.ok) throw new Error("API not ok");
     const data = await res.json();
-    statsText.textContent = `시너지 DB 총 ${data.total_problems}문항 (영상 ${data.solved_problems}건)`;
-
-    // Populate Unit Dropdown
+    updateSummaryUI(data.total_problems, data.solved_problems, data.min_no, data.max_no);
     populateUnits(data.units);
   } catch (err) {
-    // Fallback: load static data
+    // Fallback: load static data with cache-busting
     try {
       if (!staticDataCache) {
-        let cRes = await fetch("/data_cache.json");
-        if (!cRes.ok) cRes = await fetch("/static/data_cache.json");
+        let cRes = await fetch(`/data_cache.json?_t=${Date.now()}`);
+        if (!cRes.ok) cRes = await fetch(`/static/data_cache.json?_t=${Date.now()}`);
         staticDataCache = await cRes.json();
       }
       const vals = Object.values(staticDataCache);
       const total = vals.length;
       const solved = vals.filter(p => p.has_solution).length;
       const units = Array.from(new Set(vals.map(p => p.unit).filter(Boolean))).sort();
-      statsText.textContent = `시너지 DB 총 ${total}문항 (영상 ${solved}건)`;
+      const nums = Object.keys(staticDataCache).map(k => parseInt(k, 10)).filter(n => !isNaN(n));
+      const minNo = nums.length > 0 ? String(Math.min(...nums)).padStart(4, "0") : "0001";
+      const maxNo = nums.length > 0 ? String(Math.max(...nums)).padStart(4, "0") : "0000";
+
+      updateSummaryUI(total, solved, minNo, maxNo);
       populateUnits(units);
     } catch (e2) {
       statsText.textContent = "상태 조회 실패";
@@ -188,11 +204,11 @@ async function performSearch(query) {
       renderProblemsList(loadedProblems);
     }
   } catch (err) {
-    // Client-side fallback using /static/data_cache.json
+    // Client-side fallback using /static/data_cache.json with cache-busting
     try {
       if (!staticDataCache) {
-        let cRes = await fetch("/data_cache.json");
-        if (!cRes.ok) cRes = await fetch("/static/data_cache.json");
+        let cRes = await fetch(`/data_cache.json?_t=${Date.now()}`);
+        if (!cRes.ok) cRes = await fetch(`/static/data_cache.json?_t=${Date.now()}`);
         staticDataCache = await cRes.json();
       }
       const data = clientSideSearch(staticDataCache, query, onlySol, currentUnitFilter, currentDiffFilter);
@@ -220,10 +236,13 @@ function clientSideSearch(allMap, query, onlySol, unitFilter, diffFilter) {
     matchedKeys = new Set(allKeys);
   } else if (query) {
     const tokens = query.split(/[,;\s]+/);
-    for (let token of tokens) {
-      token = token.trim();
+    for (let rawToken of tokens) {
+      let token = rawToken.trim();
       if (!token) continue;
-      const m = token.match(/^(\d+)[~-](\d+)$/);
+
+      // 번호 검색 시 '#', '번' 접두/접미사 자동 제거 (예: '936번', '#936', '120-124번')
+      const cleaned = token.replace(/^[#№\s]+/, "").replace(/번$/, "").trim();
+      const m = cleaned.match(/^(\d+)[~-](\d+)$/);
       if (m) {
         let s = parseInt(m[1], 10), e = parseInt(m[2], 10);
         if (s > e) [s, e] = [e, s];
@@ -232,10 +251,10 @@ function clientSideSearch(allMap, query, onlySol, unitFilter, diffFilter) {
           if (allMap[k4]) matchedKeys.add(k4);
           else if (allMap[String(i)]) matchedKeys.add(String(i));
         }
-      } else if (/^\d+$/.test(token)) {
-        const k4 = String(parseInt(token, 10)).padStart(4, "0");
+      } else if (/^\d+$/.test(cleaned)) {
+        const k4 = String(parseInt(cleaned, 10)).padStart(4, "0");
         if (allMap[k4]) matchedKeys.add(k4);
-        else if (allMap[token]) matchedKeys.add(token);
+        else if (allMap[cleaned]) matchedKeys.add(cleaned);
       } else {
         const tl = token.toLowerCase();
         for (let k of allKeys) {
@@ -443,7 +462,11 @@ async function triggerNotionSync() {
         const total = vals.length;
         const solved = vals.filter(p => p.has_solution).length;
         const units = Array.from(new Set(vals.map(p => p.unit).filter(Boolean))).sort();
-        statsText.textContent = `시너지 DB 총 ${total}문항 (영상 ${solved}건)`;
+        const nums = Object.keys(staticDataCache).map(k => parseInt(k, 10)).filter(n => !isNaN(n));
+        const minNo = nums.length > 0 ? String(Math.min(...nums)).padStart(4, "0") : "0001";
+        const maxNo = nums.length > 0 ? String(Math.max(...nums)).padStart(4, "0") : "0000";
+
+        updateSummaryUI(total, solved, minNo, maxNo);
         populateUnits(units);
         performSearch(searchInput.value.trim());
         showToast("최신 배포 데이터가 갱신되었습니다!");

@@ -30,9 +30,14 @@ def get_summary():
         total = len(CACHED_PROBLEMS)
         with_sol = sum(1 for p in CACHED_PROBLEMS.values() if p.get("has_solution"))
         units = sorted(list(set(p.get("unit") for p in CACHED_PROBLEMS.values() if p.get("unit"))))
+        numeric_keys = [int(k) for k in CACHED_PROBLEMS.keys() if k.isdigit()]
+        min_no = f"{min(numeric_keys):04d}" if numeric_keys else "0001"
+        max_no = f"{max(numeric_keys):04d}" if numeric_keys else "0000"
     return jsonify({
         "total_problems": total,
         "solved_problems": with_sol,
+        "min_no": min_no,
+        "max_no": max_no,
         "units": units
     })
 
@@ -64,8 +69,9 @@ def search_problems():
                 if not token:
                     continue
                 
-                # Check for range: e.g. 1-10 or 1~10 or 0120~0124
-                range_match = re.match(r'^(\d+)[~-](\d+)$', token)
+                # Check for range or number, cleaning '#' and '번'
+                cleaned = re.sub(r'^[#№\s]+', '', token).rstrip('번').strip()
+                range_match = re.match(r'^(\d+)[~-](\d+)$', cleaned)
                 if range_match:
                     start = int(range_match.group(1))
                     end = int(range_match.group(2))
@@ -79,12 +85,12 @@ def search_problems():
                             matched_keys.add(k4)
                         elif str(n) in all_items:
                             matched_keys.add(str(n))
-                elif token.isdigit():
-                    k4 = f"{int(token):04d}"
+                elif cleaned.isdigit():
+                    k4 = f"{int(cleaned):04d}"
                     if k4 in all_items:
                         matched_keys.add(k4)
-                    elif token in all_items:
-                        matched_keys.add(token)
+                    elif cleaned in all_items:
+                        matched_keys.add(cleaned)
                 else:
                     # Text search in unit or problem_type or intent
                     t_lower = token.lower()

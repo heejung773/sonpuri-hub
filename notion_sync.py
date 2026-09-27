@@ -132,6 +132,15 @@ def sync_notion_data():
         if not link and norm_no in video_map:
             link = video_map[norm_no]["url"]
 
+        # 만약 기존에 등록된 번호가 있다면(중복 행), 값이 있는 데이터 우선 병합
+        if norm_no in data_by_number:
+            prev = data_by_number[norm_no]
+            difficulty = difficulty or prev.get("difficulty", "")
+            unit = unit or prev.get("unit", "")
+            problem_type = problem_type or prev.get("problem_type", "")
+            intent = intent or prev.get("intent", "")
+            link = link or prev.get("solution_link", "")
+
         data_by_number[norm_no] = {
             "problem_no": norm_no,
             "display_no": str(int(norm_no)) if norm_no.isdigit() else norm_no,
