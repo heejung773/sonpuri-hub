@@ -86,8 +86,7 @@ def sync_notion_data():
 
         for n in nums:
             num_val = int(n)
-            # Only map numbers up to 920 for 시너지 미적분1
-            if 1 <= num_val <= 920:
+            if num_val >= 1:
                 norm_no = f"{num_val:04d}"
                 if norm_no not in video_map:
                     video_map[norm_no] = {
