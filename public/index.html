@@ -132,19 +132,20 @@
 
   <!-- Floating PIP Video Player (문제별 타임스탬프 자동 연동 플레이어) -->
   <div id="floatingPlayer" class="floating-player hidden no-print">
-    <div class="fp-header">
+    <div class="fp-header" title="여기를 터치하거나 드래그하여 원하는 위치로 이동할 수 있습니다">
       <div class="fp-title-group">
+        <span class="fp-drag-handle" title="터치/드래그하여 이동">⠿</span>
         <span class="fp-badge" id="fpBadge"># 000</span>
         <span class="fp-title" id="fpTitle">손풀이 영상</span>
       </div>
       <div class="fp-actions">
         <a id="fpExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="fp-action-btn" title="YouTube 새 탭으로 열기">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
             <path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
           </svg>
         </a>
+        <button id="fpSizeBtn" class="fp-action-btn" title="화면 크기 변경 (보통 / 대형 / 최대)">⛶</button>
         <button id="fpMinBtn" class="fp-action-btn" title="플레이어 최소화/펼치기">—</button>
-        <button id="fpSizeBtn" class="fp-action-btn" title="플레이어 크기 확대/축소">⛶</button>
         <button id="fpCloseBtn" class="fp-action-btn fp-close" title="닫기">✕</button>
       </div>
     </div>

@@ -113,6 +113,9 @@ function setupEventListeners() {
 
   const fpSizeBtn = document.getElementById("fpSizeBtn");
   if (fpSizeBtn) fpSizeBtn.addEventListener("click", toggleExpandFloatingPlayer);
+
+  // Initialize draggable player for tablets and desktop
+  initDraggablePlayer();
 }
 
 function resetFilterUI() {
@@ -533,6 +536,19 @@ function playInFloatingPlayer(problemNo, link, unit, problemType) {
   const minBtn = document.getElementById("fpMinBtn");
   if (minBtn) minBtn.textContent = "—";
 
+  // Ensure window stays within screen if previously dragged
+  if (hasCustomPosition) {
+    clampPlayerPosition();
+  }
+
+  // First time hint for tablet/touch drag
+  if (!hasShownDragHint) {
+    hasShownDragHint = true;
+    setTimeout(() => {
+      showToast("💡 상단 바를 터치하여 원하는 위치로 자유롭게 이동할 수 있습니다.");
+    }, 2200);
+  }
+
   // Card active highlight
   document.querySelectorAll(".problem-card").forEach(c => c.classList.remove("card-playing"));
   const targetCard = document.getElementById(`problem-${problemNo}`);
@@ -650,20 +666,135 @@ function toggleMinimizeFloatingPlayer() {
   }
 }
 
-function toggleExpandFloatingPlayer() {
+// ==================== DRAGGABLE & SIZE CONTROLS (PAD OPTIMIZED) ====================
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let playerStartX = 0;
+let playerStartY = 0;
+let hasCustomPosition = false;
+let hasShownDragHint = false;
+
+function initDraggablePlayer() {
+  const fp = document.getElementById("floatingPlayer");
+  const header = document.querySelector(".fp-header");
+  if (!fp || !header) return;
+
+  header.addEventListener("pointerdown", (e) => {
+    // Ignore interactive button clicks
+    if (e.target.closest("button") || e.target.closest("a")) return;
+
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+
+    const rect = fp.getBoundingClientRect();
+    playerStartX = rect.left;
+    playerStartY = rect.top;
+
+    header.setPointerCapture(e.pointerId);
+    fp.style.transition = "none"; // 60fps instant tracking without lag
+  });
+
+  header.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+
+    let newLeft = playerStartX + dx;
+    let newTop = playerStartY + dy;
+
+    // Viewport clamp
+    const maxX = window.innerWidth - fp.offsetWidth - 8;
+    const maxY = window.innerHeight - fp.offsetHeight - 8;
+    newLeft = Math.max(8, Math.min(maxX, newLeft));
+    newTop = Math.max(8, Math.min(maxY, newTop));
+
+    fp.style.left = `${newLeft}px`;
+    fp.style.top = `${newTop}px`;
+    fp.style.right = "auto";
+    fp.style.bottom = "auto";
+    hasCustomPosition = true;
+  });
+
+  const onPointerUp = (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    try {
+      header.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+    fp.style.transition = "";
+  };
+
+  header.addEventListener("pointerup", onPointerUp);
+  header.addEventListener("pointercancel", onPointerUp);
+
+  // Double click / Double tap to reset position to bottom-right
+  header.addEventListener("dblclick", (e) => {
+    if (e.target.closest("button") || e.target.closest("a")) return;
+    resetPlayerPosition();
+    showToast("플레이어 위치가 기본(우측 하단)으로 초기화되었습니다.");
+  });
+
+  // Clamp on screen resize / tablet orientation change
+  window.addEventListener("resize", clampPlayerPosition);
+}
+
+function clampPlayerPosition() {
+  const fp = document.getElementById("floatingPlayer");
+  if (!fp || fp.classList.contains("hidden") || !hasCustomPosition) return;
+  const rect = fp.getBoundingClientRect();
+  const maxX = window.innerWidth - fp.offsetWidth - 8;
+  const maxY = window.innerHeight - fp.offsetHeight - 8;
+  const clampedX = Math.max(8, Math.min(maxX, rect.left));
+  const clampedY = Math.max(8, Math.min(maxY, rect.top));
+  fp.style.left = `${clampedX}px`;
+  fp.style.top = `${clampedY}px`;
+}
+
+function resetPlayerPosition() {
   const fp = document.getElementById("floatingPlayer");
   if (!fp) return;
-  fp.classList.toggle("is-expanded");
+  fp.style.left = "auto";
+  fp.style.top = "auto";
+  fp.style.right = "20px";
+  fp.style.bottom = "20px";
+  hasCustomPosition = false;
+}
+
+// 3-Stage Size Cycler: Default (580px) -> Large (780px) -> Max (96vw) -> Default
+function toggleExpandFloatingPlayer() {
+  const fp = document.getElementById("floatingPlayer");
   const sizeBtn = document.getElementById("fpSizeBtn");
-  if (sizeBtn) {
-    if (fp.classList.contains("is-expanded")) {
-      sizeBtn.textContent = "⊡";
-      sizeBtn.title = "기본 크기로 축소";
-    } else {
-      sizeBtn.textContent = "⛶";
-      sizeBtn.title = "플레이어 확대";
-    }
+  if (!fp || !sizeBtn) return;
+
+  if (!fp.classList.contains("is-large") && !fp.classList.contains("is-max")) {
+    // Mode 0 -> Mode 1: Large (780px)
+    fp.classList.add("is-large");
+    fp.classList.remove("is-max");
+    sizeBtn.textContent = "🗖";
+    sizeBtn.title = "화면 최대 크기로 확대";
+    showToast("플레이어 크기: 대형(780px)");
+  } else if (fp.classList.contains("is-large")) {
+    // Mode 1 -> Mode 2: Max (Full Width / Theater)
+    fp.classList.remove("is-large");
+    fp.classList.add("is-max");
+    sizeBtn.textContent = "⊡";
+    sizeBtn.title = "기본 크기로 축소 (580px)";
+    showToast("플레이어 크기: 최대 모드");
+  } else {
+    // Mode 2 -> Mode 0: Default
+    fp.classList.remove("is-large");
+    fp.classList.remove("is-max");
+    sizeBtn.textContent = "⛶";
+    sizeBtn.title = "대형 모드로 확대 (780px)";
+    showToast("플레이어 크기: 기본(580px)");
   }
+
+  // After size change, ensure window stays inside screen
+  setTimeout(clampPlayerPosition, 250);
 }
 
 // Trigger Notion Sync
