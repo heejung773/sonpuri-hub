@@ -313,7 +313,6 @@ function renderProblemsList(problems) {
     // 2. Solution link logic
     const link = p.solution_link;
     const hasSol = Boolean(link);
-    const embedUrl = hasSol ? getYouTubeEmbedUrl(link) : null;
 
     card.innerHTML = `
       <!-- Line 1: 문제번호 + 단원 + 난이도 + 문제유형 (옆에 나란히) + 손풀이 버튼 -->
@@ -336,10 +335,6 @@ function renderProblemsList(problems) {
               <span>손풀이 영상 보기 ▶</span>
             </button>
             <a href="${link}" target="_blank" rel="noopener noreferrer" class="btn-icon-ext" title="YouTube 새 탭으로 열기">↗</a>
-            <button class="btn-icon-copy" data-link="${link}" title="영상 링크 복사">📋 복사</button>
-            ${embedUrl ? `
-              <button class="btn-embed-toggle" data-target="embed-${p.problem_no}">▶ 미리보기</button>
-            ` : ''}
           ` : `
             <span class="sol-missing-badge">영상 준비중</span>
           `}
@@ -353,22 +348,6 @@ function renderProblemsList(problems) {
           <span class="intent-body math-target">${p.intent}</span>
         </div>
       ` : ''}
-
-      <!-- Collapsible Video Embed (미리보기 버튼 클릭 시에만 콤팩트하게 오픈) -->
-      ${embedUrl ? `
-        <div class="card-embed-box hidden" id="embed-${p.problem_no}">
-          <div class="player-aspect-ratio">
-            <iframe 
-              src="" 
-              data-src="${embedUrl}" 
-              title="${p.problem_no}번 손풀이" 
-              frameborder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowfullscreen>
-            </iframe>
-          </div>
-        </div>
-      ` : ''}
     `;
 
     // Attach play in floating player event
@@ -376,40 +355,6 @@ function renderProblemsList(problems) {
     if (solBtn) {
       solBtn.addEventListener("click", () => {
         playInFloatingPlayer(p.problem_no, link, p.unit, p.problem_type);
-      });
-    }
-
-    // Attach copy event
-    const copyBtn = card.querySelector(".btn-icon-copy");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", () => {
-        const linkToCopy = copyBtn.getAttribute("data-link");
-        navigator.clipboard.writeText(linkToCopy).then(() => {
-          showToast(`${p.problem_no}번 손풀이 링크 복사 완료!`);
-        });
-      });
-    }
-
-    // Attach embed toggle event (lazy load iframe on demand)
-    const toggleBtn = card.querySelector(".btn-embed-toggle");
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", () => {
-        const targetId = toggleBtn.getAttribute("data-target");
-        const embedBox = document.getElementById(targetId);
-        if (embedBox) {
-          const isHidden = embedBox.classList.contains("hidden");
-          if (isHidden) {
-            const iframe = embedBox.querySelector("iframe");
-            if (iframe && !iframe.src) {
-              iframe.src = iframe.getAttribute("data-src");
-            }
-            embedBox.classList.remove("hidden");
-            toggleBtn.textContent = "▲ 닫기";
-          } else {
-            embedBox.classList.add("hidden");
-            toggleBtn.textContent = "▶ 미리보기";
-          }
-        }
       });
     }
 
