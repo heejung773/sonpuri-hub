@@ -14,7 +14,6 @@ const statsText = document.getElementById("statsText");
 const resultCountBadge = document.getElementById("resultCountBadge");
 const unitFilterSelect = document.getElementById("unitFilterSelect");
 const onlySolToggle = document.getElementById("onlySolToggle");
-const printBtn = document.getElementById("printBtn");
 const syncBtn = document.getElementById("syncBtn");
 const syncBtnText = document.getElementById("syncBtnText");
 const toast = document.getElementById("toast");
@@ -94,11 +93,6 @@ function setupEventListeners() {
   // Filter toggle (손풀이 있는 문제만)
   onlySolToggle.addEventListener("change", () => {
     performSearch(searchInput.value.trim());
-  });
-
-  // Print Button
-  printBtn.addEventListener("click", () => {
-    window.print();
   });
 
   // Sync Notion DB

@@ -390,26 +390,6 @@ body {
   cursor: pointer;
 }
 
-.btn-print {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: #FFFFFF;
-  border: 1px solid #CBD5E1;
-  color: var(--text-secondary);
-  padding: 5px 11px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.btn-print:hover {
-  background: #F1F5F9;
-  color: var(--text-primary);
-}
-
 /* ==================== LOADING & EMPTY STATES ==================== */
 .loading-state, .empty-state {
   text-align: center;
