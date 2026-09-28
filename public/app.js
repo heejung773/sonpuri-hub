@@ -328,7 +328,6 @@ function renderProblemsList(problems) {
               </svg>
               <span>손풀이 영상 보기 ▶</span>
             </button>
-            <a href="${link}" target="_blank" rel="noopener noreferrer" class="btn-icon-ext" title="YouTube 새 탭으로 열기">↗</a>
           ` : `
             <span class="sol-missing-badge">영상 준비중</span>
           `}
@@ -455,11 +454,9 @@ function playInFloatingPlayer(problemNo, link, unit, problemType) {
   const fp = document.getElementById("floatingPlayer");
   const fpBadge = document.getElementById("fpBadge");
   const fpTitle = document.getElementById("fpTitle");
-  const fpExternalLink = document.getElementById("fpExternalLink");
   const container = document.getElementById("fpPlayerContainer");
 
   if (!fp || !container) {
-    window.open(link, "_blank");
     return;
   }
 
@@ -468,7 +465,6 @@ function playInFloatingPlayer(problemNo, link, unit, problemType) {
   const titleText = `${labelParts.join(" · ")} (${timeFormatted}~)`;
   fpTitle.textContent = titleText;
   fpTitle.title = titleText;
-  fpExternalLink.href = link;
 
   fp.classList.remove("hidden");
   fp.classList.remove("is-minimized");
