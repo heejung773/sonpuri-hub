@@ -103,6 +103,16 @@ function setupEventListeners() {
 
   // Sync Notion DB
   syncBtn.addEventListener("click", triggerNotionSync);
+
+  // Floating PIP Video Player controls
+  const fpCloseBtn = document.getElementById("fpCloseBtn");
+  if (fpCloseBtn) fpCloseBtn.addEventListener("click", closeFloatingPlayer);
+
+  const fpMinBtn = document.getElementById("fpMinBtn");
+  if (fpMinBtn) fpMinBtn.addEventListener("click", toggleMinimizeFloatingPlayer);
+
+  const fpSizeBtn = document.getElementById("fpSizeBtn");
+  if (fpSizeBtn) fpSizeBtn.addEventListener("click", toggleExpandFloatingPlayer);
 }
 
 function resetFilterUI() {
@@ -316,12 +326,13 @@ function renderProblemsList(problems) {
         <!-- 손풀이영상 버튼: 과한 영역 없이 깔끔한 버튼으로 제공 -->
         <div class="card-action-right">
           ${hasSol ? `
-            <a href="${link}" target="_blank" rel="noopener noreferrer" class="btn-sol-cta">
+            <button class="btn-sol-cta" data-no="${p.problem_no}" title="손풀이 영상 재생 (타임스탬프 자동 이동)">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
-              <span>손풀이 영상 보기 ↗</span>
-            </a>
+              <span>손풀이 영상 보기 ▶</span>
+            </button>
+            <a href="${link}" target="_blank" rel="noopener noreferrer" class="btn-icon-ext" title="YouTube 새 탭으로 열기">↗</a>
             <button class="btn-icon-copy" data-link="${link}" title="영상 링크 복사">📋 복사</button>
             ${embedUrl ? `
               <button class="btn-embed-toggle" data-target="embed-${p.problem_no}">▶ 미리보기</button>
@@ -356,6 +367,14 @@ function renderProblemsList(problems) {
         </div>
       ` : ''}
     `;
+
+    // Attach play in floating player event
+    const solBtn = card.querySelector(".btn-sol-cta");
+    if (solBtn) {
+      solBtn.addEventListener("click", () => {
+        playInFloatingPlayer(p.problem_no, link, p.unit, p.problem_type);
+      });
+    }
 
     // Attach copy event
     const copyBtn = card.querySelector(".btn-icon-copy");
@@ -417,29 +436,234 @@ function triggerKaTeX() {
   }
 }
 
+// ==================== FLOATING PIP VIDEO PLAYER ====================
+let fpPlayer = null;
+let currentPlayingVideoId = null;
+let currentPlayingProblemNo = null;
+
+// YouTube Time Parser (supports seconds, 1m20s, 1h2m3s)
+function parseYouTubeTime(timeStr) {
+  if (!timeStr) return 0;
+  if (/^\d+$/.test(timeStr)) return parseInt(timeStr, 10);
+  let total = 0;
+  const hours = timeStr.match(/(\d+)h/i);
+  const minutes = timeStr.match(/(\d+)m/i);
+  const seconds = timeStr.match(/(\d+)s/i);
+  if (hours) total += parseInt(hours[1], 10) * 3600;
+  if (minutes) total += parseInt(minutes[1], 10) * 60;
+  if (seconds) total += parseInt(seconds[1], 10);
+  return total;
+}
+
+// Format seconds into "X분 Y초"
+function formatTime(seconds) {
+  if (!seconds || seconds <= 0) return "0초";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) {
+    return `${m}분 ${s ? s + "초" : ""}`;
+  }
+  return `${s}초`;
+}
+
 // YouTube URL parser
-function getYouTubeEmbedUrl(url) {
+function parseYouTubeUrl(url) {
   if (!url) return null;
   let videoId = "";
   let start = 0;
 
-  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})(?:\?t=(\d+))?/);
+  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})(?:\?t=([0-9a-zA-Z]+))?/);
   if (shortMatch) {
     videoId = shortMatch[1];
-    if (shortMatch[2]) start = parseInt(shortMatch[2], 10);
+    if (shortMatch[2]) start = parseYouTubeTime(shortMatch[2]);
   } else {
     const longMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
     if (longMatch) {
       videoId = longMatch[1];
-      const timeMatch = url.match(/[?&]t=(\d+)s?/);
-      if (timeMatch) start = parseInt(timeMatch[1], 10);
+      const timeMatch = url.match(/[?&]t=([0-9a-zA-Z]+)/);
+      if (timeMatch) start = parseYouTubeTime(timeMatch[1]);
     }
   }
 
   if (videoId) {
-    return `https://www.youtube.com/embed/${videoId}?start=${start}&autoplay=0&rel=0`;
+    return { videoId, start };
   }
   return null;
+}
+
+function getYouTubeEmbedUrl(url) {
+  const parsed = parseYouTubeUrl(url);
+  if (parsed && parsed.videoId) {
+    return `https://www.youtube.com/embed/${parsed.videoId}?start=${parsed.start}&autoplay=0&rel=0`;
+  }
+  return null;
+}
+
+// Play solution video inside the Floating PIP player with instant timestamp jump
+function playInFloatingPlayer(problemNo, link, unit, problemType) {
+  const parsed = parseYouTubeUrl(link);
+  if (!parsed || !parsed.videoId) {
+    if (link) window.open(link, "_blank");
+    return;
+  }
+
+  const { videoId, start } = parsed;
+  const timeFormatted = formatTime(start);
+
+  const fp = document.getElementById("floatingPlayer");
+  const fpBadge = document.getElementById("fpBadge");
+  const fpTitle = document.getElementById("fpTitle");
+  const fpExternalLink = document.getElementById("fpExternalLink");
+  const container = document.getElementById("fpPlayerContainer");
+
+  if (!fp || !container) {
+    window.open(link, "_blank");
+    return;
+  }
+
+  fpBadge.textContent = `# ${problemNo}`;
+  const labelParts = [unit, problemType].filter(Boolean);
+  const titleText = `${labelParts.join(" · ")} (${timeFormatted}~)`;
+  fpTitle.textContent = titleText;
+  fpTitle.title = titleText;
+  fpExternalLink.href = link;
+
+  fp.classList.remove("hidden");
+  fp.classList.remove("is-minimized");
+  const minBtn = document.getElementById("fpMinBtn");
+  if (minBtn) minBtn.textContent = "—";
+
+  // Card active highlight
+  document.querySelectorAll(".problem-card").forEach(c => c.classList.remove("card-playing"));
+  const targetCard = document.getElementById(`problem-${problemNo}`);
+  if (targetCard) {
+    targetCard.classList.add("card-playing");
+  }
+  currentPlayingProblemNo = problemNo;
+
+  // Case 1: YT.Player instance is already active and ready
+  if (fpPlayer && typeof fpPlayer.seekTo === "function" && typeof fpPlayer.playVideo === "function") {
+    if (currentPlayingVideoId === videoId) {
+      // SAME VIDEO: Jump instantly to timestamp without reload!
+      fpPlayer.seekTo(start, true);
+      fpPlayer.playVideo();
+      showToast(`#${problemNo}번 (${timeFormatted}~)으로 즉시 이동했습니다.`);
+    } else {
+      // DIFFERENT VIDEO: Load new video at the target timestamp
+      currentPlayingVideoId = videoId;
+      fpPlayer.loadVideoById({ videoId: videoId, startSeconds: start });
+      showToast(`#${problemNo}번 손풀이 영상 로드 중...`);
+    }
+  } else if (window.YT && window.YT.Player) {
+    // Case 2: YT API is loaded, initialize first player instance
+    currentPlayingVideoId = videoId;
+    container.innerHTML = `<div id="ytPlayerTarget"></div>`;
+    try {
+      fpPlayer = new YT.Player("ytPlayerTarget", {
+        width: "100%",
+        height: "100%",
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          start: start,
+          rel: 0,
+          playsinline: 1
+        },
+        events: {
+          onReady: function(e) {
+            e.target.playVideo();
+          },
+          onError: function(err) {
+            console.warn("YouTube player error, falling back to direct iframe:", err);
+            container.innerHTML = `
+              <iframe 
+                src="https://www.youtube.com/embed/${videoId}?start=${start}&autoplay=1&enablejsapi=1&rel=0&playsinline=1" 
+                title="${problemNo}번 손풀이" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            `;
+          }
+        }
+      });
+      showToast(`#${problemNo}번 손풀이 영상 (${timeFormatted}~) 재생 시작`);
+    } catch (e) {
+      console.warn("YT.Player init failed, using iframe fallback:", e);
+      container.innerHTML = `
+        <iframe 
+          src="https://www.youtube.com/embed/${videoId}?start=${start}&autoplay=1&enablejsapi=1&rel=0&playsinline=1" 
+          title="${problemNo}번 손풀이" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+        </iframe>
+      `;
+      showToast(`#${problemNo}번 손풀이 영상 (${timeFormatted}~) 재생 시작`);
+    }
+  } else {
+    // Case 3: Fallback when YT API is not yet ready or blocked
+    currentPlayingVideoId = videoId;
+    container.innerHTML = `
+      <iframe 
+        src="https://www.youtube.com/embed/${videoId}?start=${start}&autoplay=1&enablejsapi=1&rel=0&playsinline=1" 
+        title="${problemNo}번 손풀이" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowfullscreen>
+      </iframe>
+    `;
+    showToast(`#${problemNo}번 손풀이 영상 (${timeFormatted}~) 재생 시작`);
+  }
+}
+
+function closeFloatingPlayer() {
+  const fp = document.getElementById("floatingPlayer");
+  if (fp) fp.classList.add("hidden");
+  if (fpPlayer && typeof fpPlayer.pauseVideo === "function") {
+    try {
+      fpPlayer.pauseVideo();
+    } catch (e) {}
+  }
+  const container = document.getElementById("fpPlayerContainer");
+  if (container) container.innerHTML = "";
+  fpPlayer = null;
+  currentPlayingVideoId = null;
+
+  document.querySelectorAll(".problem-card").forEach(c => c.classList.remove("card-playing"));
+  currentPlayingProblemNo = null;
+}
+
+function toggleMinimizeFloatingPlayer() {
+  const fp = document.getElementById("floatingPlayer");
+  if (!fp) return;
+  fp.classList.toggle("is-minimized");
+  const minBtn = document.getElementById("fpMinBtn");
+  if (minBtn) {
+    if (fp.classList.contains("is-minimized")) {
+      minBtn.textContent = "+";
+      minBtn.title = "플레이어 펼치기";
+    } else {
+      minBtn.textContent = "—";
+      minBtn.title = "플레이어 최소화";
+    }
+  }
+}
+
+function toggleExpandFloatingPlayer() {
+  const fp = document.getElementById("floatingPlayer");
+  if (!fp) return;
+  fp.classList.toggle("is-expanded");
+  const sizeBtn = document.getElementById("fpSizeBtn");
+  if (sizeBtn) {
+    if (fp.classList.contains("is-expanded")) {
+      sizeBtn.textContent = "⊡";
+      sizeBtn.title = "기본 크기로 축소";
+    } else {
+      sizeBtn.textContent = "⛶";
+      sizeBtn.title = "플레이어 확대";
+    }
+  }
 }
 
 // Trigger Notion Sync

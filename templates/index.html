@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <!-- YouTube IFrame Player API for instant timestamp seeking -->
+  <script src="https://www.youtube.com/iframe_api"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -126,6 +128,31 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden">링크가 복사되었습니다!</div>
+  </div>
+
+  <!-- Floating PIP Video Player (문제별 타임스탬프 자동 연동 플레이어) -->
+  <div id="floatingPlayer" class="floating-player hidden no-print">
+    <div class="fp-header">
+      <div class="fp-title-group">
+        <span class="fp-badge" id="fpBadge"># 000</span>
+        <span class="fp-title" id="fpTitle">손풀이 영상</span>
+      </div>
+      <div class="fp-actions">
+        <a id="fpExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="fp-action-btn" title="YouTube 새 탭으로 열기">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+            <path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+          </svg>
+        </a>
+        <button id="fpMinBtn" class="fp-action-btn" title="플레이어 최소화/펼치기">—</button>
+        <button id="fpSizeBtn" class="fp-action-btn" title="플레이어 크기 확대/축소">⛶</button>
+        <button id="fpCloseBtn" class="fp-action-btn fp-close" title="닫기">✕</button>
+      </div>
+    </div>
+    <div class="fp-body" id="fpBody">
+      <div class="fp-iframe-wrap">
+        <div id="fpPlayerContainer"></div>
+      </div>
+    </div>
   </div>
 
   <script src="/app.js"></script>

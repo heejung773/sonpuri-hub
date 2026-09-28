@@ -561,11 +561,38 @@ body {
   font-weight: 700;
   padding: 6px 14px;
   border-radius: 6px;
-  transition: background 0.15s;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
 }
 
 .btn-sol-cta:hover {
   background: var(--btn-sol-hover);
+  transform: translateY(-1px);
+}
+
+.btn-icon-ext {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: var(--text-secondary);
+  padding: 6px 9px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.btn-icon-ext:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+  border-color: #94A3B8;
 }
 
 .btn-icon-copy, .btn-embed-toggle {
@@ -591,6 +618,23 @@ body {
   background: #F1F5F9;
   padding: 4px 10px;
   border-radius: 5px;
+}
+
+/* Playing Card Highlight */
+.problem-card.card-playing {
+  border-color: #3B82F6 !important;
+  background: #F8FAFC !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25), 0 4px 12px rgba(59, 130, 246, 0.08) !important;
+}
+
+.problem-card.card-playing .problem-no-badge {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+.problem-card.card-playing .btn-sol-cta {
+  background: #1D4ED8 !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
 }
 
 /* Row 2: 출제의도 (난이도, 문제유형과 함께 깔끔하게 표시) */
@@ -639,6 +683,150 @@ body {
   border: none;
 }
 
+/* ==================== FLOATING PIP VIDEO PLAYER ==================== */
+.floating-player {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  background: #0F172A;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+  overflow: hidden;
+  transition: width 0.25s ease, transform 0.2s ease, opacity 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.floating-player.is-expanded {
+  width: 640px;
+}
+
+.floating-player.is-minimized .fp-body {
+  display: none;
+}
+
+.floating-player.is-minimized {
+  width: 320px;
+  border-radius: 10px;
+}
+
+.fp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  border-bottom: 1px solid #334155;
+  user-select: none;
+}
+
+.fp-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.fp-badge {
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  letter-spacing: -0.2px;
+}
+
+.fp-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #F8FAFC;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+}
+
+.fp-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.fp-action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #CBD5E1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.fp-action-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.fp-action-btn.fp-close:hover {
+  background: #DC2626;
+  border-color: #EF4444;
+  color: #FFFFFF;
+}
+
+.fp-body {
+  position: relative;
+  width: 100%;
+  background: #000000;
+}
+
+.fp-iframe-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 ratio */
+}
+
+.fp-iframe-wrap iframe,
+.fp-iframe-wrap #fpPlayerContainer,
+.fp-iframe-wrap #fpPlayerContainer iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media (max-width: 640px) {
+  .floating-player {
+    right: 10px;
+    bottom: 10px;
+    width: calc(100vw - 20px);
+    max-width: 100%;
+  }
+  .floating-player.is-expanded {
+    width: calc(100vw - 20px);
+  }
+}
+
 /* Toast */
 .toast {
   position: fixed;
@@ -666,7 +854,7 @@ body {
     color: #000000 !important;
     padding: 0;
   }
-  .no-print {
+  .no-print, .floating-player {
     display: none !important;
   }
   .app-container {
@@ -680,7 +868,7 @@ body {
     margin-bottom: 12px;
     padding: 10px 14px;
   }
-  .btn-sol-cta, .btn-icon-copy, .btn-embed-toggle {
+  .btn-sol-cta, .btn-icon-ext, .btn-icon-copy, .btn-embed-toggle {
     display: none !important;
   }
   .card-embed-box {
